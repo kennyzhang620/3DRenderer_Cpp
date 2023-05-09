@@ -12,6 +12,7 @@
 #include "Mesh.h"
 #include <thread>
 #include <queue>
+#include <unordered_map>
 
 using namespace std;
 
@@ -36,15 +37,22 @@ Triangle* Get_Triangle(float* parms) { // Pass in a starting pointer to the firs
 }
 
 
-void test() {
+struct ZBufferFrag {
+	COLORREF colour;
+	float z_index;
+	int x, y;
+};
 
-}
 class Renderer3D
 {
 
 public:
 
 	void setCanvas(int resX, int resY) { // Create a canvas
+		myconsole = GetConsoleWindow();
+		maxWidth = resX; maxHeight = resY;
+		//Get a handle to device context
+	    mydc = GetDC(myconsole);
 		memdc = CreateCompatibleDC(mydc);
 		hbitmap = CreateCompatibleBitmap(mydc, resX, resY);
 		SelectObject(memdc, hbitmap);
@@ -60,14 +68,74 @@ public:
 		return val;
 	}
 
+	int encodeXY(int x, int y) {
+		int res = y * maxWidth + x;
+
+		return res;
+	}
+	
+	void ClearPixels() {
+		for (auto x = zbuffer.begin(); x != zbuffer.end(); x++) {
+			
+			ZBufferFrag r = x->second;
+
+			SetPixelV(memdc, r.x, r.y, RGB(0, 0, 0));
+		}
+
+		zbuffer.clear();
+	}
+
+	void SetPixelOptimized(HDC hdc, float x, float y, COLORREF colour) {
+		int t = encodeXY(x, y);
+		ZBufferFrag zfrag;
+		zfrag.colour = colour;
+		zfrag.z_index = 0;
+		zfrag.x = x;
+		zfrag.y = y;
+		if (zbuffer.find(t) != zbuffer.end()) {
+			zbuffer[t].colour = colour;
+			zbuffer[t].x = x; zbuffer[t].y = y;
+			SetPixelV(hdc, x, y, colour);
+		}
+		else {
+			std::pair<float, ZBufferFrag> pair(t, zfrag);
+			zbuffer.insert(pair);
+			SetPixelV(hdc, x, y, colour);
+		}
+	}
+
+	void SetPixelZBuffer(HDC hdc, float x, float y, float z, COLORREF colour) {
+		int t = encodeXY(x, y);
+		ZBufferFrag zfrag;
+		zfrag.colour = colour;
+		zfrag.z_index = z;
+		if (zbuffer.find(t) != zbuffer.end()) {
+			if (zbuffer[t].z_index < z) {
+				zbuffer[t].z_index = z;
+				zbuffer[t].colour = colour;
+				SetPixelV(hdc, x, y, colour);
+			}
+			else {
+				SetPixelV(hdc, x, y, zbuffer[t].colour);
+			}
+		}
+		else {
+			std::pair<float, ZBufferFrag> pair(t, zfrag);
+			zbuffer.insert(pair);
+			SetPixelV(hdc, x, y, colour);
+		}
+	}
+
 	// take 3 vertices defining a solid triangle and rasterize to framebuffer. Requires function pointer that performs pixel shading and optional parameters (addparms)
-	void RenderTris(Triangle t, VectorCoords(*fragShader)(const float[], const float[]), float* addparms = nullptr, char interlace = -1) {
+	void RenderTris(Triangle t, VectorCoords(*fragShader)(const float[], const float[]), float* addparms = nullptr) {
 
 		int maxX = 0;
 		int minX = 0;
 
 		int maxY = 0;
 		int minY = 0;
+
+	//	t.TruncatebyMaxMin(0, max(maxHeight, maxWidth));
 
 		VectorCoords tester[3] = { t.v1, t.v2, t.v3 };
 		for (int l = 0; l < 3;l++) {
@@ -100,10 +168,31 @@ public:
 				minY = tester[l].y;
 		}
 
+		
 		const float mx = ceil((t.v1.x + t.v2.x + t.v3.x) / 3);
 		const float my = ceil((t.v1.y + t.v2.y + t.v3.y) / 3);
 		const float tarea = checkTriangle(t.v1, t.v2, VectorCoords(mx, my)) + checkTriangle(t.v2, t.v3, VectorCoords(mx, my)) + checkTriangle(t.v3, t.v1, VectorCoords(mx, my));
 
+		if (minX < 0)
+			minX = 0;
+		if (minX > maxWidth)
+			minX = maxWidth;
+
+		if (maxX < 0)
+			maxX = 0;
+		if (maxX > maxWidth)
+			maxX = maxWidth;
+
+		if (minY < 0)
+			minY = 0;
+		if (minY > maxHeight)
+			minY = maxHeight;
+
+		if (maxY < 0)
+			maxY = 0;
+		if (maxY > maxHeight)
+			maxY = maxHeight;
+		
 			if (true) {
 				for (int xt = minX; xt <= maxX; xt++) {
 					for (int yt = minY; yt <= maxY; yt++) {
@@ -136,8 +225,11 @@ public:
 
 							const VectorCoords fragColor = fragShader(vectors, addparms);
 
-							if ((xt % 2 == interlace && yt % 2 == interlace)) // remove interlace later on
-								SetPixelV(memdc, xt, yt, RGB(fragColor.x,fragColor.y,fragColor.z));
+						//	SetPixelV(memdc, xt, yt, RGB(fragColor.x,fragColor.y,fragColor.z));
+
+							if (yt % 2 == 0)
+								SetPixelOptimized(memdc, xt, yt, RGB(fragColor.x, fragColor.y, fragColor.z));
+						//	SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
 						}
 					}
 				}
@@ -147,22 +239,28 @@ public:
 	void StartMTRenderer() {
 		MTRender = true;
 		unit1 = std::thread(&Renderer3D::rasterizepool, this, 0, &MTRender);
-		unit2 = std::thread(&Renderer3D::rasterizepool, this, 1, &MTRender);
-		unit3 = std::thread(&Renderer3D::rasterizepool, this, 2, &MTRender);
-		unit4 = std::thread(&Renderer3D::rasterizepool, this, 3, &MTRender);
+	//	unit2 = std::thread(&Renderer3D::rasterizepool, this, 1, &MTRender);
+	//	unit3 = std::thread(&Renderer3D::rasterizepool, this, 2, &MTRender);
+	//	unit4 = std::thread(&Renderer3D::rasterizepool, this, 3, &MTRender);
 
 		unit1.detach();
-		unit2.detach();
-		unit3.detach();
-		unit4.detach();
+	//	unit2.detach();
+	//	unit3.detach();
+	//	unit4.detach();
 	}
 
 	void MultiThreadedRenderTris(Triangle tris) {
-		if (poolIndex > 3) {
+		if (poolIndex > 0) {
 			poolIndex = 0;
 		}
 		
-		pmain[poolIndex++].push(tris);
+		if (sem[poolIndex] == 0) {
+			sem[poolIndex] = 1;
+			pmain[poolIndex].push(tris);
+			sem[poolIndex] = 0;
+
+			poolIndex++;
+		}
 	}
 
 	void StopMTRenderer() {
@@ -236,26 +334,32 @@ public:
 
 	void rasterizepool(int poolID, bool* state) {
 		while (*state) {
-			if (pmain.size() > 0 && !pmain[poolID].empty()) {
+			if (sem[poolID] == 0 && pmain.size() > 0 && !pmain[poolID].empty()) {
+				sem[poolID] = 1;
 				RenderTris(pmain[poolID].top(), pmain[poolID].top().FragShader, pmain[poolID].top().fparms);
 				pmain[poolID].pop();
+				sem[poolID] = 0;
 			}
 		}
 	}
 
 private:
 	HWND myconsole = GetConsoleWindow();
+	int maxWidth = 0;
+	int maxHeight = 0;
+	
 	//Get a handle to device context
 	HDC mydc = GetDC(myconsole);
 	HDC memdc = CreateCompatibleDC(mydc);
 	HBITMAP hbitmap;
+	std::unordered_map<int, ZBufferFrag> zbuffer;
 
 	priority_queue<Triangle> p1;
 	priority_queue<Triangle> p2;
 	priority_queue<Triangle> p3;
 	priority_queue<Triangle> p4;
 	std::vector<priority_queue<Triangle>> pmain = { p1, p2, p3, p4 };
-	
+	int sem[4] = { 0,0,0,0 };
 	bool MTRender = true;
 	int poolIndex = 0;
 	

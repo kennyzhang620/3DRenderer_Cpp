@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.29001.49
+VisualStudioVersion = 16.0.33027.164
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleApplicationMaze", "ConsoleApplicationMaze\ConsoleApplicationMaze.vcxproj", "{767AFF39-3BEF-4172-929F-6041DBDD71E1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3DRenderer_Cpp", "3DRenderer\3DRenderer.vcxproj", "{767AFF39-3BEF-4172-929F-6041DBDD71E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {A28C673D-08CF-4512-9C6B-2C573EF07BA0}
+		SolutionGuid = {0857995F-C552-4F50-ABA4-F3C9F8B4722E}
 	EndGlobalSection
 EndGlobal

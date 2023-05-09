@@ -35,7 +35,36 @@ public:
 	}
 
 	float norm() {
-		return sqrtf(pow(x, 2) + pow(y, 2));
+		return sqrtf(pow(x, 2) + pow(y, 2) + pow(z, 2));// +pow(w, 2));
+	}
+
+	void normalize() {
+		float normV = norm();
+
+		if (normV != 0) {
+			x /= normV;
+			y /= normV;
+			z /= normV;
+		//	w /= normV;
+		}
+	}
+
+	void reduceDim(int dim) {
+		if (dim >= 1) {
+			w = 0;
+			a = 0;
+			nw = 0;
+		}
+
+		if (dim >= 2) {
+			z = 0;
+			nz = 0;
+			b = 0;
+		}
+	}
+
+	float dotProduct(VectorCoords vtr) {
+		return (x * vtr.x + y * vtr.y + z * vtr.z);// +w * vtr.w);
 	}
 
 	VectorCoords() {

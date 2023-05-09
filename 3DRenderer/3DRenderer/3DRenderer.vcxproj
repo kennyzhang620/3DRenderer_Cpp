@@ -153,6 +153,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Bitmap.cpp" />
+    <ClCompile Include="CameraObject.cpp" />
+    <ClCompile Include="CubePrim.cpp" />
+    <ClCompile Include="DebugSp.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Global_Stack.cpp" />
+    <ClCompile Include="LevelObject.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="PlayerObject.cpp" />
+    <ClCompile Include="RendererObject.cpp" />
     <ClCompile Include="Renderer_Main.cpp" />
     <ClCompile Include="MatrixMxN.cpp" />
     <ClCompile Include="Mesh.h" />
@@ -161,7 +170,17 @@
   <ItemGroup>
     <ClInclude Include="Backtracker.h" />
     <ClInclude Include="Bitmap.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraObject.h" />
+    <ClInclude Include="CubePrim.h" />
+    <ClInclude Include="DebugSp.h" />
     <ClInclude Include="FragmentShaders.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Global_Stack.h" />
+    <ClInclude Include="LevelObject.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="PlayerObject.h" />
+    <ClInclude Include="RendererObject.h" />
     <ClInclude Include="Renderer_3D.h" />
     <ClInclude Include="MatrixMxN.h" />
     <ClInclude Include="Renderer_2D.h" />

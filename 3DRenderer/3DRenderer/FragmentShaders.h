@@ -1,3 +1,5 @@
+#include "Bitmap.h"
+#include "Renderer_3D.h"
 VectorCoords FragShader_BS(const float vectors[], const float parms[]) {
 
 	return VectorCoords(255 * (vectors[0] + 1) / 2.0f, 255 * (vectors[1] + 1) / 2.0f, 255 * (vectors[2] + 1) / 2.0f);
@@ -33,5 +35,9 @@ VectorCoords FragShader_Text(const float vectors[], const float parms[]) {
 
 VectorCoords FragShader_White(const float vectors[], const float parms[]) {
 	return VectorCoords(255, 255, 255);
+}
+
+VectorCoords FragShader_Red(const float vectors[], const float parms[]) {
+	return VectorCoords(255, 0,0);
 }
 

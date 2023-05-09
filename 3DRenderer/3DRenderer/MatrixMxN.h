@@ -60,7 +60,7 @@ public:
 		MatrixMxN(size, size);
 	}
 
-	void Rotate(float angle) { // 2d only
+	void Rotate(float angle) { // 2d only -- depreciated. Use RotateZ with 4x1 VectorCoords to simulate 2D rotation.
 
 		float rads = (angle * (3.14159)) / 180.0;
 		vector<vector<T>> tempRot = { {cos(rads), -sin(rads)},
@@ -76,11 +76,107 @@ public:
 		std::copy(tempRot.begin(), tempRot.end(),matrixres.begin());
 	}
 
+	/*
+	mat4 FPSViewRH( vec3 eye, float pitch, float yaw )
+{
+    // I assume the values are already converted to radians.
+    float cosPitch = cos(pitch);
+    float sinPitch = sin(pitch);
+    float cosYaw = cos(yaw);
+    float sinYaw = sin(yaw);
+ 
+    vec3 xaxis = { cosYaw, 0, -sinYaw };
+    vec3 yaxis = { sinYaw * sinPitch, cosPitch, cosYaw * sinPitch };
+    vec3 zaxis = { sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw };
+ 
+    // Create a 4x4 view matrix from the right, up, forward and eye position vectors
+    mat4 viewMatrix = {
+        vec4(       xaxis.x, x           yaxis.x,  x          zaxis.x, x     0 x),
+        vec4(       xaxis.y, x           yaxis.y,  x          zaxis.y, x     0 ),
+        vec4(       xaxis.z, x           yaxis.z, x           zaxis.z, x     0 ),
+        vec4( -dot( xaxis, eye ) x, -dot( yaxis, eye ), -dot( zaxis, eye ), 1 x)
+    };
+    
+    return viewMatrix;
+}
+	*/
 
+	float dot(VectorCoords x1, VectorCoords x2) {
+		return (x1.x * x2.x + x1.y * x2.y + x1.z * x2.z);
+	}
+
+	void ViewMatrix(VectorCoords camPos, float yRot, float xRot) {
+		float cosPitch = cos(yRot);
+		float sinPitch = sin(yRot);
+		float cosYaw = cos(xRot);
+		float sinYaw = sin(xRot);
+
+		VectorCoords xaxis = VectorCoords(cosYaw, 0, -sinYaw);
+		VectorCoords yaxis = VectorCoords(sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
+		VectorCoords zaxis = VectorCoords(sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw);
+
+		matrixres[0][0] = xaxis.x; matrixres[0][1] = xaxis.y; matrixres[0][2] = xaxis.z; matrixres[0][3] = -dot(xaxis, camPos);
+		matrixres[1][0] = yaxis.x; matrixres[1][1] = yaxis.y; matrixres[1][2] = yaxis.z; matrixres[1][3] = -dot(yaxis, camPos);
+		matrixres[2][0] = zaxis.x; matrixres[2][1] = zaxis.y; matrixres[2][2] = zaxis.z; matrixres[2][3] = -dot(zaxis, camPos);
+		matrixres[3][0] = 0; matrixres[3][1] = 0; matrixres[3][2] = 0; matrixres[3][3] = 1;
+	}
+
+	void ProjectPerspective(float l, float r, float t, float b, float f, float n) {
+		matrixres[0][0] = 2 * n / (r - l);
+		matrixres[0][1] = 0;
+		matrixres[0][2] = (r + l) / (r - l);
+		matrixres[0][3] = 0;
+
+		matrixres[1][0] = 0;
+		matrixres[1][1] = 2 * n / (t - b);
+		matrixres[1][2] = (t + b) / (t - b);
+		matrixres[1][3] = 0;
+
+		matrixres[2][0] = 0;
+		matrixres[2][1] = 0;
+		matrixres[2][2] = -(f + n) / (f - n);
+		matrixres[2][3] = -2 * f * n / (f - n);
+
+		matrixres[3][0] = 0;
+		matrixres[3][1] = 0;
+		matrixres[3][2] = -1;
+		matrixres[3][3] = 0;
+	}
+
+	void ProjectOrtho(float l, float r, float t, float b, float f, float n) {
+		matrixres[0][0] = 2  / (r - l);
+		matrixres[0][1] = 0;
+		matrixres[0][2] = 0;
+		matrixres[0][3] = -(r + l) / (r - l);
+
+		matrixres[1][0] = 0;
+		matrixres[1][1] = 2  / (t - b);
+		matrixres[1][2] = 0;
+		matrixres[1][3] = -(t + b) / (t - b);
+
+		matrixres[2][0] = 0;
+		matrixres[2][1] = 0;
+		matrixres[2][2] = -2 / (f - n);
+		matrixres[2][3] = -(f + n) / (f - n);
+
+		matrixres[3][0] = 0;
+		matrixres[3][1] = 0;
+		matrixres[3][2] = 0;
+		matrixres[3][3] = 1;
+	}
+
+	void Identity4x4() {
+		matrixres[0][0] = 1; matrixres[0][1] = 0; matrixres[0][2] = 0; matrixres[0][3] = 0;
+		matrixres[1][0] = 0; matrixres[1][1] = 1; matrixres[1][2] = 0; matrixres[1][3] = 0;
+		matrixres[2][0] = 0; matrixres[2][1] = 0; matrixres[2][2] = 1; matrixres[2][3] = 0;
+		matrixres[3][0] = 0; matrixres[3][1] = 0; matrixres[3][2] = 0; matrixres[3][3] = 1;
+	}
+	
 	void Scale3D(float x, float y, float z) {
 		matrixres[0][0] = x;
 		matrixres[0][1] = 0;
-		matrixres[0][2] = 0; matrixres[0][3] = 0;
+		matrixres[0][2] = 0; 
+		matrixres[0][3] = 0;
 
 		matrixres[1][0] = 0; matrixres[1][1] = y;
 		matrixres[1][2] = 0; matrixres[1][3] = 0;
@@ -97,33 +193,24 @@ public:
 	}
 
 	void RotateZ(float angle) {
-		float rads = (angle * (3.14159)) / 180.0;
-		matrixres[0][0] = cos(rads); matrixres[0][1] = -sin(rads); matrixres[0][2] = 0; matrixres[0][3] = 0;
-		matrixres[1][0] = sin(rads); matrixres[1][1] = cos(rads); matrixres[1][2] = 0; matrixres[1][3] = 0;
+		matrixres[0][0] = cos(angle); matrixres[0][1] = -sin(angle); matrixres[0][2] = 0; matrixres[0][3] = 0;
+		matrixres[1][0] = sin(angle); matrixres[1][1] = cos(angle); matrixres[1][2] = 0; matrixres[1][3] = 0;
 		matrixres[2][0] = 0; matrixres[2][1] = 0; matrixres[2][2] = 1; matrixres[2][3] = 0;
 		matrixres[3][0] = 0; matrixres[3][1] = 0; matrixres[3][2] = 0; matrixres[3][3] = 1;
 	}
 
-	void RotateY(float angle) {
-		float rads = (angle * (3.14159)) / 180.0;
-		matrixres[0][0] = cos(rads); matrixres[0][1] = 0; matrixres[0][2] = sin(rads); matrixres[0][3] = 0;
+	void RotateX(float angle) {
+		matrixres[0][0] = cos(angle); matrixres[0][1] = 0; matrixres[0][2] = sin(angle); matrixres[0][3] = 0;
 		matrixres[1][0] = 0; matrixres[1][1] = 1; matrixres[1][2] = 0; matrixres[1][3] = 0;
-		matrixres[2][0] = -sin(rads); matrixres[2][1] = 0; matrixres[2][2] = cos(rads); matrixres[2][3] = 0;
+		matrixres[2][0] = -sin(angle); matrixres[2][1] = 0; matrixres[2][2] = cos(angle); matrixres[2][3] = 0;
 		matrixres[3][0] = 0; matrixres[3][1] = 0; matrixres[3][2] = 0; matrixres[3][3] = 1;
 	}
 
-	void RotateX(float angle) {
-		float rads = (angle * (3.14159)) / 180.0;
+	void RotateY(float angle) {
 		matrixres[0][0] = 1; matrixres[0][1] = 0; matrixres[0][2] = 0; matrixres[0][3] = 0;
-		matrixres[1][0] = 0; matrixres[1][1] = cos(rads); matrixres[1][2] = -sin(rads); matrixres[1][3] = 0;
-		matrixres[2][0] = 0; matrixres[2][1] = sin(rads); matrixres[2][2] = cos(rads); matrixres[2][3] = 0;
+		matrixres[1][0] = 0; matrixres[1][1] = cos(angle); matrixres[1][2] = -sin(angle); matrixres[1][3] = 0;
+		matrixres[2][0] = 0; matrixres[2][1] = sin(angle); matrixres[2][2] = cos(angle); matrixres[2][3] = 0;
 		matrixres[3][0] = 0; matrixres[3][1] = 0; matrixres[3][2] = 0; matrixres[3][3] = 1;
-		vector<vector<T>> tempRot = { {1, 0,0,0},
-									  {0, cos(rads),-sin(rads),0},
-									  {0, sin(rads),cos(rads),0},
-									  {0, 0,0,1} };
-
-		std::copy(tempRot.begin(), tempRot.end(),matrixres.begin());
 	}
 
 	VectorCoords GetTransform(VectorCoords vector) {

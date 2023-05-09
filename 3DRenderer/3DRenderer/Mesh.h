@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
 #include "VectorCoords.h"
+#define T_POSITION 0 
+#define T_ROTATION 1
+#define T_SCALE 2
 
 using namespace std;
 
@@ -29,13 +32,100 @@ public:
 		return (z_index < str.z_index);
 	}
 
+	void TruncatebyMaxMin(float minV, float maxV) {
+		if (v1.x < minV) {
+			v1.x = minV;
+		}
+
+		if (v1.y < minV) {
+			v1.y = minV;
+		}
+
+		if (v1.z < minV) {
+			v1.z = minV;
+		}
+
+		if (v2.x < minV) {
+			v2.x = minV;
+		}
+
+		if (v2.y < minV) {
+			v2.y = minV;
+		}
+
+		if (v2.z < minV) {
+			v2.z = minV;
+		}
+
+		if (v2.z < minV) {
+			v2.z = minV;
+		}
+
+		if (v3.x < minV) {
+			v3.x = minV;
+		}
+
+		if (v3.y < minV) {
+			v3.y = minV;
+		}
+
+		if (v3.z < minV) {
+			v3.z = minV;
+		}
+
+
+		if (v1.x > maxV) {
+			v1.x = maxV;
+		}
+
+		if (v1.y > maxV) {
+			v1.y = maxV;
+		}
+
+		if (v1.z > maxV) {
+			v1.z = maxV;
+		}
+
+		if (v2.x > maxV) {
+			v2.x = maxV;
+		}
+
+		if (v2.y > maxV) {
+			v2.y = maxV;
+		}
+
+		if (v2.z > maxV) {
+			v2.z = maxV;
+		}
+
+		if (v2.z > maxV) {
+			v2.z = maxV;
+		}
+
+		if (v3.x > maxV) {
+			v3.x = maxV;
+		}
+
+		if (v3.y > maxV) {
+			v3.y = maxV;
+		}
+
+		if (v3.z > maxV) {
+			v3.z = maxV;
+		}
+	}
+
+	Triangle() {
+		FragShader = nullptr;
+		z_index = 0;
+	}
+
 	Triangle(VectorCoords x, VectorCoords y, VectorCoords z) {
 		v1 = x;
 		v2 = y;
 		v3 = z;
 		FragShader = nullptr;
-		z_index = max(v1.z, v2.z);
-		z_index = max(z_index, v3.z);
+		z_index = min(min(v1.z, v2.z), v3.z);
 	}
 
 	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, VectorCoords(*f1)(const float[], const float[])) {
@@ -44,8 +134,7 @@ public:
 		v3 = z;
 		FragShader = f1;
 
-		z_index = max(v1.z, v2.z);
-		z_index = max(z_index, v3.z);
+		z_index = min(min(v1.z, v2.z), v3.z);
 	}
 
 	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, float uvx, float uvy, VectorCoords(*f1)(const float[], const float[])) {
@@ -56,8 +145,8 @@ public:
 		uy = uvy;
 		FragShader = f1;
 
-		z_index = max(v1.z, v2.z);
-		z_index = max(z_index, v3.z);
+		z_index = min(min(v1.z, v2.z), v3.z);
+
 	}
 
 	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, VectorCoords(*f1)(const float[], const float[]), float* addparms) {
@@ -67,8 +156,8 @@ public:
 		FragShader = f1;
 		fparms = addparms;
 
-		z_index = max(v1.z, v2.z);
-		z_index = max(z_index, v3.z);
+		z_index = min(min(v1.z, v2.z), v3.z);
+
 	}
 
 	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, float uvx, float uvy, VectorCoords(*f1)(const float[], const float[]), float* addparms) {
@@ -80,8 +169,8 @@ public:
 		FragShader = f1;
 		fparms = addparms;
 
-		z_index = max(v1.z, v2.z);
-		z_index = max(z_index, v3.z);
+		z_index = min(min(v1.z, v2.z), v3.z);
+
 	}
 
 
@@ -92,6 +181,10 @@ public:
 	vector<Triangle> MeshCoords;
 	vector<VectorCoords>  Normals;
 	vector<VectorCoords> UVCoords;
+
+	Mesh() {
+
+	}
 
 	Mesh(vector<float> pos, vector<float> norms, vector<float> uvs) {
 		//	cout << pos.size()/9 << "SS\n";
@@ -134,4 +227,32 @@ public:
 	float xScale = 1;
 	float yScale = 1;
 	float zScale = 1;
+
+	Transform() {
+	}
+
+	Transform(float x, float y, float z, int MODE) {
+		if (MODE == 0) {
+			xPos = x; yPos = y; zPos = z;
+		}
+		
+		if (MODE == 1) {
+			xRot = x; yRot = y; zRot = z;
+		}
+
+		if (MODE == 2) {
+			xScale = x; yScale = y; zScale = z;
+		}
+	}
+
+	Transform(float x, float y, float z, float rx, float ry, float rz) {
+			xPos = x; yPos = y; zPos = z;
+			xRot = rx; yRot = ry; zRot = rz;
+	}
+
+	Transform(float x, float y, float z, float rx, float ry, float rz, float sx, float sy, float sz) {
+		xPos = x; yPos = y; zPos = z;
+		xRot = rx; yRot = ry; zRot = rz;
+		xScale = sx; yScale = sy; zScale = sz;
+	}
 };
