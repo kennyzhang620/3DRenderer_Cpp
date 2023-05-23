@@ -1,6 +1,5 @@
 #pragma once
-#pragma once
-#pragma warning(disable : 4996
+#pragma warning(disable : 4996)
 
 #include <cstdio>
 #include <iostream>
@@ -10,7 +9,6 @@
 #include <Windows.h>
 #include "MatrixMxN.h"
 #include <math.h>
-#include "Mesh.h"
 
 using namespace std;
 

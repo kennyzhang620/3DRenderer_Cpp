@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "VectorCoords.h"
+#include "Material.h"
 #define T_POSITION 0 
 #define T_ROTATION 1
 #define T_SCALE 2
@@ -12,8 +12,9 @@ public:
 	VectorCoords v1;
 	VectorCoords v2;
 	VectorCoords v3;
-	VectorCoords(*FragShader)(const float[], const float[]) = nullptr;
-	float* fparms = nullptr; // Float array of parameters (actually bc its c/c++ u can encode whatever with pointers)
+	Material* FragMaterial;
+//	VectorCoords(*FragShader)(const float[], const float[]) = nullptr;
+//	float* fparms = nullptr; // Float array of parameters (actually bc its c/c++ u can encode whatever with pointers)
 
 	float z_index; // For z-buffering
 
@@ -116,7 +117,8 @@ public:
 	}
 
 	Triangle() {
-		FragShader = nullptr;
+//		FragShader = nullptr;
+		FragMaterial = nullptr;
 		z_index = 0;
 	}
 
@@ -124,55 +126,32 @@ public:
 		v1 = x;
 		v2 = y;
 		v3 = z;
-		FragShader = nullptr;
+	//	FragShader = nullptr;
+		FragMaterial = nullptr;
 		z_index = min(min(v1.z, v2.z), v3.z);
 	}
 
-	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, VectorCoords(*f1)(const float[], const float[])) {
-		v1 = x;
-		v2 = y;
-		v3 = z;
-		FragShader = f1;
-
-		z_index = min(min(v1.z, v2.z), v3.z);
-	}
-
-	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, float uvx, float uvy, VectorCoords(*f1)(const float[], const float[])) {
+	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, float uvx, float uvy, Material* fl) {
 		v1 = x;
 		v2 = y;
 		v3 = z;
 		ux = uvx;
 		uy = uvy;
-		FragShader = f1;
+		FragMaterial = fl;
 
 		z_index = min(min(v1.z, v2.z), v3.z);
 
 	}
 
-	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, VectorCoords(*f1)(const float[], const float[]), float* addparms) {
+	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, Material* fl) {
 		v1 = x;
 		v2 = y;
 		v3 = z;
-		FragShader = f1;
-		fparms = addparms;
+		FragMaterial = fl;
 
 		z_index = min(min(v1.z, v2.z), v3.z);
 
 	}
-
-	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, float uvx, float uvy, VectorCoords(*f1)(const float[], const float[]), float* addparms) {
-		v1 = x;
-		v2 = y;
-		v3 = z;
-		ux = uvx;
-		uy = uvy;
-		FragShader = f1;
-		fparms = addparms;
-
-		z_index = min(min(v1.z, v2.z), v3.z);
-
-	}
-
 
 };
 
@@ -254,5 +233,13 @@ public:
 		xPos = x; yPos = y; zPos = z;
 		xRot = rx; yRot = ry; zRot = rz;
 		xScale = sx; yScale = sy; zScale = sz;
+	}
+	
+	void SetPosition(float x, float y, float z) {
+		xPos = x; yPos = y; zPos = z;
+	}
+
+	void SetRotation(float x, float y, float z) {
+		xRot = x; yRot = y; zRot = z;
 	}
 };

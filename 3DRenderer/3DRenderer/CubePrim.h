@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "RendererObject.h"
+#include "DiffuseMaterial.h"
 class CubePrim: public GameObject
 {
 	public:
@@ -22,6 +23,9 @@ class CubePrim: public GameObject
 		void Start() {
 			Renderer.ObjectMesh = objectMesh;
 			Renderer.ObjectTransform = ObjectTransform;
+			df.TextureMode = 1;
+			df.TextureName = "dvd.bmp";
+			Renderer.BaseMat = &df;
 		}
 		void Update() {
 			Renderer.Update();
@@ -36,6 +40,6 @@ class CubePrim: public GameObject
 		vector<float> uv_test = {};
 
 		Mesh am = Mesh(positions, test_norms, uvCoords);
-
+		DiffuseMaterial df = DiffuseMaterial();
 };
 

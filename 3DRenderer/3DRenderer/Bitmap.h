@@ -32,9 +32,6 @@
 #include <limits>
 #include <string>
 #include <vector>
-#include "Backtracker.h"
-#include "VectorCoords.h"
-
 
 class bitmap_image
 {

@@ -3,8 +3,8 @@
 #include "Material.h"
 
 enum ProjectionMode {
-	Project_Perspective,
-	Project_Ortho
+	Project_Perspective, // Project to screen-space using perspective rendering.
+	Project_Ortho // Project to screen-space using orthographic projection.
 };
 
 class CameraObject : public GameObject

@@ -109,10 +109,13 @@ public:
 		ZBufferFrag zfrag;
 		zfrag.colour = colour;
 		zfrag.z_index = z;
+		zfrag.x = x;
+		zfrag.y = y;
 		if (zbuffer.find(t) != zbuffer.end()) {
 			if (zbuffer[t].z_index < z) {
 				zbuffer[t].z_index = z;
 				zbuffer[t].colour = colour;
+				zbuffer[t].x = x; zbuffer[t].y = y;
 				SetPixelV(hdc, x, y, colour);
 			}
 			else {
@@ -127,7 +130,7 @@ public:
 	}
 
 	// take 3 vertices defining a solid triangle and rasterize to framebuffer. Requires function pointer that performs pixel shading and optional parameters (addparms)
-	void RenderTris(Triangle t, VectorCoords(*fragShader)(const float[], const float[]), float* addparms = nullptr) {
+	void RenderTris(Triangle t, Material* mat) {
 
 		int maxX = 0;
 		int minX = 0;
@@ -223,12 +226,19 @@ public:
 							Triangle** trs = (Triangle**)(vectors + 3);
 							(*trs) = &t;
 
-							const VectorCoords fragColor = fragShader(vectors, addparms);
+							// Pass vertex information to the Material (which has a frag shader)
+							mat->PassVectors(vectors);
+							VectorCoords fragColor = mat->GetFragShader();
 
+							if (xt <= minX + 3 || xt >= maxX-3 || yt >= maxY-3 || yt <= minY+3) {
+								fragColor = VectorCoords(255, 0, 0);
+							}
 						//	SetPixelV(memdc, xt, yt, RGB(fragColor.x,fragColor.y,fragColor.z));
 
-							if (yt % 2 == 0)
-								SetPixelOptimized(memdc, xt, yt, RGB(fragColor.x, fragColor.y, fragColor.z));
+							if (yt % 2 == 0) {
+								//SetPixelOptimized(memdc, xt, yt, RGB(fragColor.x, fragColor.y, fragColor.z));
+								SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+							}
 						//	SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
 						}
 					}
@@ -238,12 +248,12 @@ public:
 	
 	void StartMTRenderer() {
 		MTRender = true;
-		unit1 = std::thread(&Renderer3D::rasterizepool, this, 0, &MTRender);
+	//	unit1 = std::thread(&Renderer3D::rasterizepool, this, 0, &MTRender);
 	//	unit2 = std::thread(&Renderer3D::rasterizepool, this, 1, &MTRender);
 	//	unit3 = std::thread(&Renderer3D::rasterizepool, this, 2, &MTRender);
 	//	unit4 = std::thread(&Renderer3D::rasterizepool, this, 3, &MTRender);
 
-		unit1.detach();
+	//	unit1.detach();
 	//	unit2.detach();
 	//	unit3.detach();
 	//	unit4.detach();
@@ -331,17 +341,19 @@ public:
 		BitBlt(mydc, 0, 0, resX, resY, memdc, 0, 0, SRCCOPY);
 	}
 
-
+	/*
 	void rasterizepool(int poolID, bool* state) {
 		while (*state) {
 			if (sem[poolID] == 0 && pmain.size() > 0 && !pmain[poolID].empty()) {
 				sem[poolID] = 1;
-				RenderTris(pmain[poolID].top(), pmain[poolID].top().FragShader, pmain[poolID].top().fparms);
+				RenderTris(pmain[poolID].top(), pmain[poolID].top().FragMaterial);
 				pmain[poolID].pop();
 				sem[poolID] = 0;
 			}
 		}
 	}
+
+	*/
 
 private:
 	HWND myconsole = GetConsoleWindow();

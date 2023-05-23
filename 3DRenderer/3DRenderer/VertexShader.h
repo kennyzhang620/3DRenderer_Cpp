@@ -1,12 +1,9 @@
 #pragma once
 #include "Camera.h"
 #include <math.h>
-#include "Renderer_3D.h"
-#include "Renderer_2D.h"
 #include "MatrixMxN.h"
 #include "Global_Stack.h"
 
-#define PI 3.14159
 #define PROJECT_PERSPECTIVE 0
 #define PROJECT_ORTHO 1
 
@@ -19,7 +16,7 @@ void Rasterizer(Renderer3D& renderer, int xCoords, int yCoords, priority_queue<T
 
 	while (tris.size() > 0) {
 		int maxS = tris.size() - 1;
-		renderer.RenderTris(tris.top(), tris.top().FragShader, tris.top().fparms);
+	//	renderer.RenderTris(tris.front(), tris.front().FragShader, tris.front().fparms);
 		tris.pop();
 	}
 
@@ -35,13 +32,9 @@ void Rasterizer_MT(Renderer3D& renderer, priority_queue <Triangle, vector<Triang
 	// Sort by z-index and rasterize by distance.
 	while (tris.size() > 0) {
 		int maxS = tris.size() - 1;
-		renderer.MultiThreadedRenderTris(tris.top());
+	//	renderer.MultiThreadedRenderTris(tris.front());
 		tris.pop();
 	}
-}
-
-float radians(float deg) {
-	return (deg * (PI) / (180.f));
 }
 
 void SetProjMatrix(float fov, float width, float height, float nearP, float farP, float params[]) {
@@ -134,8 +127,7 @@ int Triangle_ClipAgainstPlane(VectorCoords plane_p, VectorCoords plane_n, Triang
 		// the plane, the triangle simply becomes a smaller triangle
 
 		// Copy appearance info to new triangle
-		out_tri1.fparms = in_tri.fparms;
-		out_tri1.FragShader = in_tri.FragShader;
+		out_tri1.FragMaterial = in_tri.FragMaterial; //in_tri.FragShader;
 		out_tri1.ux = in_tri.ux;
 		out_tri1.uy = in_tri.uy;
 
@@ -160,15 +152,13 @@ int Triangle_ClipAgainstPlane(VectorCoords plane_p, VectorCoords plane_n, Triang
 		// represent a quad with two new triangles
 
 		// Copy appearance info to new triangles
-		out_tri1.fparms = in_tri.fparms;
-		out_tri1.FragShader = in_tri.FragShader;
+		out_tri1.FragMaterial = in_tri.FragMaterial;
 		out_tri1.ux = in_tri.ux;
 		out_tri1.uy = in_tri.uy;
 
 		out_tri1.z_index = in_tri.z_index;
 
-		out_tri2.fparms = in_tri.fparms;
-		out_tri2.FragShader = in_tri.FragShader;
+		out_tri2.FragMaterial = in_tri.FragMaterial;//in_tri.FragShader;
 		out_tri2.ux = in_tri.ux;
 		out_tri2.uy = in_tri.uy;
 
@@ -192,6 +182,12 @@ int Triangle_ClipAgainstPlane(VectorCoords plane_p, VectorCoords plane_n, Triang
 	}
 }
 
+void ClearTrisBuffer() {
+	while (!tris.empty()) {
+		tris.pop();
+	}
+}
+
 // Set up a camera and project into view space from cam point. Either write the new changes directly to Tbuffer or into image texture
 void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float farPlane, int ProjectMode) {
 	MatrixMxN<float> cam(4, 4);
@@ -211,25 +207,25 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 		rot.ProjectPerspective(projectparams[2], projectparams[1], projectparams[0], projectparams[3], projectparams[5], projectparams[4]);
 	}
 	if (ProjectMode == PROJECT_ORTHO) {
-		SetOthoMatrix(xCoords, yCoords, VectorCoords(8, 8, 8), VectorCoords(0, 0, 0), nearPlane, farPlane, projectparams);
+		SetOthoMatrix(xCoords, yCoords, VectorCoords(farPlane, farPlane, farPlane), VectorCoords(nearPlane, nearPlane, nearPlane), nearPlane, farPlane, projectparams);
 		rot.ProjectOrtho(projectparams[2], projectparams[1], projectparams[0], projectparams[3], projectparams[5], projectparams[4]);
 	}
 	rot.res_to_matrix();
 
 	renderer.ClearPixels();
-	while (!tris.empty()) {
-		VectorCoords v1n = cam.matmul_vtr(tris.top().v1);
-		VectorCoords v2n = cam.matmul_vtr(tris.top().v2);
-		VectorCoords v3n = cam.matmul_vtr(tris.top().v3);
+	int sizeQ = tris.size();
+	while (sizeQ-- >= 0) {
+		VectorCoords v1n = cam.matmul_vtr(tris.front().v1);
+		VectorCoords v2n = cam.matmul_vtr(tris.front().v2);
+		VectorCoords v3n = cam.matmul_vtr(tris.front().v3);
 
-		VectorCoords(*FragShader)(const float[], const float[]) = tris.top().FragShader;
-		float* parms = tris.top().fparms;
+		Material* mat = tris.front().FragMaterial;
 
 		int clippedTris = 0;
 		Triangle clipped[2];
 
-		Triangle viewT = Triangle(v1n, v2n, v3n);
-		clippedTris = Triangle_ClipAgainstPlane(VectorCoords(0, 0, nearPlane, 0), VectorCoords(0, 0, farPlane, 0), viewT, clipped[0], clipped[1]);
+		Triangle viewT(v1n, v2n, v3n);
+		clippedTris = Triangle_ClipAgainstPlane(VectorCoords(0, 0, nearPlane, 1), VectorCoords(0, 0, farPlane, 1), viewT, clipped[0], clipped[1]);
 
 		for (int i = 0; i < clippedTris; i++) {
 			v1n = rot.matmul_vtr(clipped[i].v1);
@@ -268,19 +264,20 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 
 			// convert to raster space and mark the position of the vertex in the image with a simple dot
 
-			Triangle worldTris(v1n, v2n, v3n, FragShader, parms);
-			renderer.RenderTris(worldTris, FragShader, parms);
+			Triangle worldTris(v1n, v2n, v3n, mat);
+			renderer.RenderTris(worldTris, mat);
 			
 		}
+		tris.push(tris.front());
 		tris.pop();
 	}
 	renderer.displayImage(xCoords, yCoords);
 }
 
-void MeshTransform(Mesh mesh, Transform trans, VectorCoords(*FragShader)(const float[], const float[]), float* parms = nullptr) {
+void MeshTransform(Mesh mesh, Transform trans, Material* mat) {
 	// Converts model space to world space coordinates (applys model transforms and projects to world)
 	// Assign each triangle its associated fragment (pixel) shader.
-	priority_queue<Triangle, vector<Triangle>, std::greater<Triangle>>& triangleCollection = tris;
+	queue<Triangle>& triangleCollection = tris;
 	MatrixMxN<float> scale(4, 4);
 	MatrixMxN<float> rot(4, 4);
 	scale.Scale3D(trans.xScale, trans.yScale, trans.zScale);
@@ -310,7 +307,7 @@ void MeshTransform(Mesh mesh, Transform trans, VectorCoords(*FragShader)(const f
 		VectorCoords v2n = scale.matmul_vtr(mesh.MeshCoords[i].v2);
 		VectorCoords v3n = scale.matmul_vtr(mesh.MeshCoords[i].v3);
 
-		Triangle worldTris(v1n, v2n, v3n, FragShader, parms);
+		Triangle worldTris(v1n, v2n, v3n, mat);
 		triangleCollection.push(worldTris);
 	}
 
@@ -425,8 +422,8 @@ void ProjectMesh(int xCoords, int yCoords, float nearPlane, float farPlane, int 
 
 			// convert to raster space and mark the position of the vertex in the image with a simple dot
 
-				Triangle worldTris(v1n, v2n, v3n, FragShader, parms);
-				triangleCollection.push(worldTris);
+		//		Triangle worldTris(v1n, v2n, v3n, FragShader, parms);
+			//	triangleCollection.push(worldTris);
 
 		//	
 

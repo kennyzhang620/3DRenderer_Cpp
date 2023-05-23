@@ -1,12 +1,17 @@
 #pragma once
 #include <queue>
 #include <vector>
-#include "Mesh.h"
 #include "Renderer_3D.h"
 #include "Renderer_2D.h"
 
-static priority_queue<Triangle, std::vector<Triangle>, std::greater<Triangle>> tris;
-static int windowX = 720 / 1; int windowY = 480 / 1;
+#define PI 3.14159
+
+float radians(float deg) {
+	return (deg * (PI) / (180.f));
+}
+
+static queue<Triangle> tris;
+static int windowX = 720 / 3; int windowY = 480 / 3;
 static Renderer3D renderer;
 
 static int frames = 0;
@@ -47,6 +52,10 @@ void ConsoleUpdate() {
 	if (dTtime > cfps * 0.05f) {
 		onTick = true;
 		dTtime = false;
+	}
+
+	while (!tris.empty()) {
+		tris.pop();
 	}
 }
 

@@ -1,12 +1,13 @@
 #pragma once
 #include "GameObject.h"
 #include "Material.h"
+#include "VertexShader.h"
 class RendererObject :
     public GameObject
 {
 public:
     Mesh ObjectMesh;
-    Material BaseMat;
+    Material* BaseMat;
 
     void Start() {
         
@@ -17,7 +18,7 @@ public:
     }
 
     void Update() {
-        MeshTransform(ObjectMesh, *ObjectTransform, FragShader_BS, BaseMat.GetFragParams());
+        MeshTransform(ObjectMesh, *ObjectTransform,BaseMat);
     }
 
 };

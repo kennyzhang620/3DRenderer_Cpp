@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "RendererObject.h"
-
+#include "UnmappedMat.h"
 class LevelObject: public GameObject
 {
 public:
@@ -10,15 +10,23 @@ public:
 		Start();
 	}
 
+	LevelObject(float x, float y, float z):objectMesh(am) {
+		Start();
+		ObjectTransform->xPos = x;
+		ObjectTransform->yPos = y;
+		ObjectTransform->zPos = z;
+	}
 	Mesh& objectMesh;
 	RendererObject Renderer;
 
 	void Start() {
 		Renderer.ObjectMesh = objectMesh;
 		Renderer.ObjectTransform = ObjectTransform;
+		Renderer.BaseMat = &mat;
 	}
 	void Update() {
 		Renderer.Update();
+		ObjectTransform->xRot += radians(1);
 	}
 
 private:
@@ -30,5 +38,6 @@ private:
 	vector<float> uv_test = {};
 
 	Mesh am = Mesh(test_pos, test_norms, uvCoords);
+	UnmappedMat mat = UnmappedMat();
 };
 

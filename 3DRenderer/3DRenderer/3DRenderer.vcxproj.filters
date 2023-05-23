@@ -57,6 +57,12 @@
     <ClCompile Include="DebugSp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DiffuseMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UnmappedMat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Backtracker.h">
@@ -114,6 +120,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DebugSp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DiffuseMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UnmappedMat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

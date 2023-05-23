@@ -156,6 +156,7 @@
     <ClCompile Include="CameraObject.cpp" />
     <ClCompile Include="CubePrim.cpp" />
     <ClCompile Include="DebugSp.cpp" />
+    <ClCompile Include="DiffuseMaterial.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Global_Stack.cpp" />
     <ClCompile Include="LevelObject.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="Renderer_Main.cpp" />
     <ClCompile Include="MatrixMxN.cpp" />
     <ClCompile Include="Mesh.h" />
+    <ClCompile Include="UnmappedMat.cpp" />
     <ClCompile Include="VectorCoords.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +176,7 @@
     <ClInclude Include="CameraObject.h" />
     <ClInclude Include="CubePrim.h" />
     <ClInclude Include="DebugSp.h" />
+    <ClInclude Include="DiffuseMaterial.h" />
     <ClInclude Include="FragmentShaders.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Global_Stack.h" />
@@ -185,6 +188,7 @@
     <ClInclude Include="MatrixMxN.h" />
     <ClInclude Include="Renderer_2D.h" />
     <ClInclude Include="Render_2D_Demo.h" />
+    <ClInclude Include="UnmappedMat.h" />
     <ClInclude Include="VectorCoords.h" />
     <ClInclude Include="VertexShader.h" />
   </ItemGroup>
