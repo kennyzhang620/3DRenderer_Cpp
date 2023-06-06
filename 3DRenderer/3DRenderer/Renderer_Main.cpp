@@ -14,14 +14,15 @@
 #include "CubePrim.h"
 #include "DebugSp.h"
 #include "DiffuseMaterial.h"
+#include "TestObj.h"
 
 using namespace std;
 
 void Rasterize_ST() {
 	renderer.setCanvas(windowX, windowY);
 
+	/*
 	LevelObject m1(0,0,5);
-	CubePrim c(3, 0, 0);
 	DebugSp d(-3, 0, 0);
 	PlayerObject Player(0.0f,1.0f,0.0f);
 	PlayerObject p2(0, 9, 4);
@@ -30,13 +31,21 @@ void Rasterize_ST() {
 	p2.MainCamera.ProjectMode = Project_Ortho;
 	p2.MainCamera.nearPlane = 0; p2.MainCamera.farPlane = 6;
 //	c.ObjectTransform->SetRotation(radians(45),0,0);
+*/
+
+	TestObj o(0,0,3);
+	CubePrim c(3, 0, 0);
+	PlayerObject Player(0.0f, 1.0f, 0.0f);
+	GameObject gc;
 	while (1) {
 		if (onTick) {
-			m1.Update();
+			//m1.Update();
 			c.Update();
 		//	d.Update();
-			Player.Update();
+			//Player.Update();
 		//	p2.Update();
+			o.Update();
+			Player.Update();
 			onTick = false;
 		}
 		ConsoleUpdate();

@@ -1,0 +1,38 @@
+# Blender MTL File: 'None'
+# Material Count: 3
+
+newmtl mn_rrmt_00_1_mi.001
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.000000 C:\\Users\\kenny\\Downloads\\dragon-mystic-the-lost-ark\\source\\Dragon.fbm\\mn_rrmt_00_1_mi_Normal_0001.png
+map_Kd C:\\Users\\kenny\\Downloads\\dragon-mystic-the-lost-ark\\source\\Dragon.fbm\\mn_rrmt_00_1_mi_Diffuse_0001.png
+
+newmtl mn_rrmt_00_2_mi.001
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.000000 C:\\Users\\kenny\\Downloads\\dragon-mystic-the-lost-ark\\source\\Dragon.fbm\\mn_rrmt_00_2_mi_Normal_0001.png
+map_Kd C:\\Users\\kenny\\Downloads\\dragon-mystic-the-lost-ark\\source\\Dragon.fbm\\mn_rrmt_00_2_mi_Diffuse_0001.png
+
+newmtl mn_rrmt_00_mi
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.000000 C:\\Users\\kenny\\Downloads\\dragon-mystic-the-lost-ark\\source\\Dragon.fbm\\mn_rrmt_00_mi_Normal.png
+map_Kd C:\\Users\\kenny\\Downloads\\dragon-mystic-the-lost-ark\\source\\Dragon.fbm\\mn_rrmt_00_mi_Diffuse.png

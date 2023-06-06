@@ -1,9 +1,53 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <omp.h>
 #include "VectorCoords.h"
 
 using namespace std;
+
+void matmul_omp(vector<vector<float>>& C, vector<vector<float>> A, vector<vector<float>> B) {
+	int i, j, k = 0;
+#pragma omp parallel for private(i,j,k) shared(A,B,C)    
+	for (i = 0; i < C.size(); ++i) {
+		for (k = 0; k < A[i].size(); ++k) {
+			for (j = 0; j < B[k].size(); ++j) {
+				C[i][j] += A[i][k] * B[k][j];
+			}
+		}
+	}
+}
+
+VectorCoords matmul_omp_vtr(vector<vector<float>> matrix, VectorCoords mat2) { // Multiply 4x1 vector by transformation matrix. Only work with 4x4 matrices and vectors (VectorCoords are 1x4)
+	VectorCoords resV;
+	float temp[4] = { mat2.x, mat2.y, mat2.z, mat2.w };
+	float res[4];
+	int i, l = 0;
+	if (matrix.size() == 4 && matrix[0].size() == 4) {
+#pragma omp parallel for private(i,l) shared(matrix,temp,res)   
+		for (i = 0; i < 4; i++) {
+			float val = 0;
+			for (l = 0; l < 4; l++) {
+				//cout << i << "  " << l << '\n';
+				//cout << matrix[i][l] << 'x' << temp[l] << "+" << '\n';
+				val += matrix[i][l] * temp[l];
+			}
+			//cout << "Res: " << val << '\n';
+			res[i] = val;
+		}
+
+
+		resV.x = res[0]; resV.y = res[1]; resV.z = res[2]; resV.w = res[3]; resV.r = mat2.r; resV.g = mat2.g; resV.b = mat2.b; resV.a = mat2.a; resV.nx = mat2.nx; resV.ny = mat2.ny;
+		resV.nz = mat2.nz; resV.nw = mat2.nw; resV.ux = mat2.ux; resV.uy = mat2.uy;
+		return resV;
+
+	}
+	else {
+		return mat2;
+	}
+
+
+}
 
 template <typename T>
 class MatrixMxN
@@ -50,7 +94,7 @@ public:
 		for (int cols = 0; cols < sizeM; cols++) {
 			for (int rows = 0; rows < sizeN; rows++) {
 				if (rows != cols)
-					matrix[cols][rows] = rand() % 50;
+					matrixres[cols][rows] = rand() % 50;
 
 			}
 		}
@@ -221,6 +265,15 @@ public:
 		std::copy(matrixres.begin(), matrixres.end(), matrix.begin());
 	}
 
+	void matmul(MatrixMxN<T> mat2) {
+		matmul_omp(matrixres, matrix, mat2.matrix);
+	}
+
+	/*
+	VectorCoords matmul_vtr(VectorCoords mat2) {
+		return matmul_omp_vtr(matrix, mat2);
+	}
+	
 	void matmul(MatrixMxN<T> mat2) { // Multiply two matrices using standard matrix multiplcation
 		int xN = 0;
 		int yN = 0;
@@ -242,11 +295,12 @@ public:
 			}
 		}
 	}
-
+	
+	*/
 	VectorCoords matmul_vtr(VectorCoords mat2) { // Multiply 4x1 vector by transformation matrix. Only work with 4x4 matrices and vectors (VectorCoords are 1x4)
 		VectorCoords resV;
 		float temp[4] = { mat2.x, mat2.y, mat2.z, mat2.w };
-		float res[4]; int ind = 0;
+		float res[4];
 		if (sizeN == 4) {
 			for (int i = 0; i < sizeM; i++) {
 					float val = 0;
@@ -256,11 +310,12 @@ public:
 						val += matrix[i][l] * temp[l];
 					}
 					//cout << "Res: " << val << '\n';
-					res[ind++] = val;
+					res[i] = val;
 			}
 
 
-			resV.x = res[0]; resV.y = res[1]; resV.z = res[2]; resV.w = res[3]; resV.r = mat2.r; resV.g = mat2.g; resV.b = mat2.b; resV.a = mat2.a;
+			resV.x = res[0]; resV.y = res[1]; resV.z = res[2]; resV.w = res[3]; resV.r = mat2.r; resV.g = mat2.g; resV.b = mat2.b; resV.a = mat2.a; resV.nx = mat2.nx; resV.ny = mat2.ny;
+			resV.nz = mat2.nz; resV.nw = mat2.nw; resV.ux = mat2.ux; resV.uy = mat2.uy;
 			return resV;
 
 		}
@@ -270,7 +325,6 @@ public:
 
 		
 	}
-
+	
 };
-
 

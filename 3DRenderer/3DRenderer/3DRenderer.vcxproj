@@ -124,6 +124,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/arch:AVX2 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,11 +163,13 @@
     <ClCompile Include="Global_Stack.cpp" />
     <ClCompile Include="LevelObject.cpp" />
     <ClCompile Include="Material.cpp" />
+    <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="RendererObject.cpp" />
     <ClCompile Include="Renderer_Main.cpp" />
     <ClCompile Include="MatrixMxN.cpp" />
     <ClCompile Include="Mesh.h" />
+    <ClCompile Include="TestObj.cpp" />
     <ClCompile Include="UnmappedMat.cpp" />
     <ClCompile Include="VectorCoords.cpp" />
   </ItemGroup>
@@ -182,12 +186,14 @@
     <ClInclude Include="Global_Stack.h" />
     <ClInclude Include="LevelObject.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="RendererObject.h" />
     <ClInclude Include="Renderer_3D.h" />
     <ClInclude Include="MatrixMxN.h" />
     <ClInclude Include="Renderer_2D.h" />
     <ClInclude Include="Render_2D_Demo.h" />
+    <ClInclude Include="TestObj.h" />
     <ClInclude Include="UnmappedMat.h" />
     <ClInclude Include="VectorCoords.h" />
     <ClInclude Include="VertexShader.h" />

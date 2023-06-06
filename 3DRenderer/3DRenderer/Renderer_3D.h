@@ -13,6 +13,7 @@
 #include <thread>
 #include <queue>
 #include <unordered_map>
+#include <mutex>
 
 using namespace std;
 
@@ -92,6 +93,9 @@ public:
 		zfrag.z_index = 0;
 		zfrag.x = x;
 		zfrag.y = y;
+
+		std::lock_guard<std::mutex> guard(zbuffer_m);
+
 		if (zbuffer.find(t) != zbuffer.end()) {
 			zbuffer[t].colour = colour;
 			zbuffer[t].x = x; zbuffer[t].y = y;
@@ -111,11 +115,15 @@ public:
 		zfrag.z_index = z;
 		zfrag.x = x;
 		zfrag.y = y;
+
+		std::lock_guard<std::mutex> guard(zbuffer_m);
 		if (zbuffer.find(t) != zbuffer.end()) {
 			if (zbuffer[t].z_index < z) {
+				
 				zbuffer[t].z_index = z;
 				zbuffer[t].colour = colour;
 				zbuffer[t].x = x; zbuffer[t].y = y;
+
 				SetPixelV(hdc, x, y, colour);
 			}
 			else {
@@ -125,6 +133,7 @@ public:
 		else {
 			std::pair<float, ZBufferFrag> pair(t, zfrag);
 			zbuffer.insert(pair);
+
 			SetPixelV(hdc, x, y, colour);
 		}
 	}
@@ -197,8 +206,12 @@ public:
 			maxY = maxHeight;
 		
 			if (true) {
-				for (int xt = minX; xt <= maxX; xt++) {
-					for (int yt = minY; yt <= maxY; yt++) {
+				int xt = minX;
+				int yt = minY;
+
+#pragma omp parallel for private(xt,yt)
+				for (xt = minX; xt <= maxX; xt++) {
+					for (yt = minY; yt <= maxY; yt++) {
 						const float ev1 = checkTriangle(t.v2, t.v3, VectorCoords(xt,yt));
 						const float ev2 = checkTriangle(t.v3, t.v1, VectorCoords(xt, yt));
 						const float ev3 = checkTriangle(t.v1, t.v2, VectorCoords(xt, yt));
@@ -230,15 +243,13 @@ public:
 							mat->PassVectors(vectors);
 							VectorCoords fragColor = mat->GetFragShader();
 
-							if (xt <= minX + 3 || xt >= maxX-3 || yt >= maxY-3 || yt <= minY+3) {
-								fragColor = VectorCoords(255, 0, 0);
-							}
+				//			if (xt <= minX + 3 || xt >= maxX-3 || yt >= maxY-3 || yt <= minY+3) {
+					//			fragColor = VectorCoords(255, 0, 0);
+						//	}
 						//	SetPixelV(memdc, xt, yt, RGB(fragColor.x,fragColor.y,fragColor.z));
 
-							if (yt % 2 == 0) {
-								//SetPixelOptimized(memdc, xt, yt, RGB(fragColor.x, fragColor.y, fragColor.z));
-								SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
-							}
+							SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+							
 						//	SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
 						}
 					}
@@ -246,40 +257,6 @@ public:
 			}
 	}
 	
-	void StartMTRenderer() {
-		MTRender = true;
-	//	unit1 = std::thread(&Renderer3D::rasterizepool, this, 0, &MTRender);
-	//	unit2 = std::thread(&Renderer3D::rasterizepool, this, 1, &MTRender);
-	//	unit3 = std::thread(&Renderer3D::rasterizepool, this, 2, &MTRender);
-	//	unit4 = std::thread(&Renderer3D::rasterizepool, this, 3, &MTRender);
-
-	//	unit1.detach();
-	//	unit2.detach();
-	//	unit3.detach();
-	//	unit4.detach();
-	}
-
-	void MultiThreadedRenderTris(Triangle tris) {
-		if (poolIndex > 0) {
-			poolIndex = 0;
-		}
-		
-		if (sem[poolIndex] == 0) {
-			sem[poolIndex] = 1;
-			pmain[poolIndex].push(tris);
-			sem[poolIndex] = 0;
-
-			poolIndex++;
-		}
-	}
-
-	void StopMTRenderer() {
-		MTRender = false;
-		unit1.join();
-		unit2.join();
-		unit3.join();
-		unit4.join();
-	}
 	void RenderScreenSpace(int Xcoord, int Ycoord, MatrixMxN<float> transform, bitmap_image* img = nullptr, VectorCoords(*fragShader)(const float[], const float[]) = nullptr, float* addparms = nullptr) { // Render directly to screenspace.
 		// Supports the same fragment shader models as 3D. Fragment shader is optional.
 
@@ -364,20 +341,8 @@ private:
 	HDC mydc = GetDC(myconsole);
 	HDC memdc = CreateCompatibleDC(mydc);
 	HBITMAP hbitmap;
+	//ZBufferFrag* zbuffer = nullptr;
 	std::unordered_map<int, ZBufferFrag> zbuffer;
-
-	priority_queue<Triangle> p1;
-	priority_queue<Triangle> p2;
-	priority_queue<Triangle> p3;
-	priority_queue<Triangle> p4;
-	std::vector<priority_queue<Triangle>> pmain = { p1, p2, p3, p4 };
-	int sem[4] = { 0,0,0,0 };
-	bool MTRender = true;
-	int poolIndex = 0;
-	
-	std::thread unit1;
-	std::thread unit2;
-	std::thread unit3;
-	std::thread unit4;
+	std::mutex zbuffer_m;
 };
 

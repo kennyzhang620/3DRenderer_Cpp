@@ -128,9 +128,6 @@ int Triangle_ClipAgainstPlane(VectorCoords plane_p, VectorCoords plane_n, Triang
 
 		// Copy appearance info to new triangle
 		out_tri1.FragMaterial = in_tri.FragMaterial; //in_tri.FragShader;
-		out_tri1.ux = in_tri.ux;
-		out_tri1.uy = in_tri.uy;
-
 		out_tri1.z_index = in_tri.z_index;
 
 
@@ -153,15 +150,9 @@ int Triangle_ClipAgainstPlane(VectorCoords plane_p, VectorCoords plane_n, Triang
 
 		// Copy appearance info to new triangles
 		out_tri1.FragMaterial = in_tri.FragMaterial;
-		out_tri1.ux = in_tri.ux;
-		out_tri1.uy = in_tri.uy;
-
 		out_tri1.z_index = in_tri.z_index;
 
 		out_tri2.FragMaterial = in_tri.FragMaterial;//in_tri.FragShader;
-		out_tri2.ux = in_tri.ux;
-		out_tri2.uy = in_tri.uy;
-
 		out_tri2.z_index = in_tri.z_index;
 
 		// The first triangle consists of the two inside points and a new
@@ -226,47 +217,51 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 
 		Triangle viewT(v1n, v2n, v3n);
 		clippedTris = Triangle_ClipAgainstPlane(VectorCoords(0, 0, nearPlane, 1), VectorCoords(0, 0, farPlane, 1), viewT, clipped[0], clipped[1]);
+		
+		if (clippedTris > 0) {
+			int i = 0;
+#pragma omp parallel for private(i)
+			for (i = 0; i < clippedTris; i++) {
+				v1n = rot.matmul_vtr(clipped[i].v1);
+				v2n = rot.matmul_vtr(clipped[i].v2);
+				v3n = rot.matmul_vtr(clipped[i].v3);
 
-		for (int i = 0; i < clippedTris; i++) {
-			v1n = rot.matmul_vtr(clipped[i].v1);
-			v2n = rot.matmul_vtr(clipped[i].v2);
-			v3n = rot.matmul_vtr(clipped[i].v3);
+				if (v1n.w != 1 && v1n.w != 0) {
+					v1n.x /= v1n.w;
+					v1n.y /= v1n.w;
+					v1n.z /= v1n.w;
+				}
 
-			if (v1n.w != 1 && v1n.w != 0) {
-				v1n.x /= v1n.w;
-				v1n.y /= v1n.w;
-				v1n.z /= v1n.w;
+				if (v2n.w != 1 && v2n.w != 0) {
+					v2n.x /= v2n.w;
+					v2n.y /= v2n.w;
+					v2n.z /= v2n.w;
+
+
+				}
+
+				if (v3n.w != 1 && v3n.w != 0) {
+					v3n.x /= v3n.w;
+					v3n.y /= v3n.w;
+					v3n.z /= v3n.w;
+
+
+				}
+
+				v1n.x = ((v1n.x + 1) / 2.0f) * xCoords;
+				v1n.y = ((v1n.y + 1) / 2.0f) * yCoords;
+				v2n.x = ((v2n.x + 1) / 2.0f) * xCoords;
+				v2n.y = ((v2n.y + 1) / 2.0f) * yCoords;
+				v3n.x = ((v3n.x + 1) / 2.0f) * xCoords;
+				v3n.y = ((v3n.y + 1) / 2.0f) * yCoords;
+
+
+				// convert to raster space and mark the position of the vertex in the image with a simple dot
+
+				Triangle worldTris(v1n, v2n, v3n, mat);
+				renderer.RenderTris(worldTris, mat);
+
 			}
-
-			if (v2n.w != 1 && v2n.w != 0) {
-				v2n.x /= v2n.w;
-				v2n.y /= v2n.w;
-				v2n.z /= v2n.w;
-
-
-			}
-
-			if (v3n.w != 1 && v3n.w != 0) {
-				v3n.x /= v3n.w;
-				v3n.y /= v3n.w;
-				v3n.z /= v3n.w;
-
-
-			}
-
-			v1n.x = ((v1n.x + 1) / 2.0f) * xCoords;
-			v1n.y = ((v1n.y + 1) / 2.0f) * yCoords;
-			v2n.x = ((v2n.x + 1) / 2.0f) * xCoords;
-			v2n.y = ((v2n.y + 1) / 2.0f) * yCoords;
-			v3n.x = ((v3n.x + 1) / 2.0f) * xCoords;
-			v3n.y = ((v3n.y + 1) / 2.0f) * yCoords;
-
-
-			// convert to raster space and mark the position of the vertex in the image with a simple dot
-
-			Triangle worldTris(v1n, v2n, v3n, mat);
-			renderer.RenderTris(worldTris, mat);
-			
 		}
 		tris.push(tris.front());
 		tris.pop();
@@ -301,13 +296,16 @@ void MeshTransform(Mesh mesh, Transform trans, Material* mat) {
 	scale.res_to_matrix();
 
 	// NOTE! scale is the model -> world space matrix
-
-	for (int i = 0; i < mesh.MeshCoords.size(); i++) {
+	int i = 0;
+	std::mutex tc;
+#pragma omp parallel for private(i)
+	for (i = 0; i < mesh.MeshCoords.size(); i++) {
 		VectorCoords v1n = scale.matmul_vtr(mesh.MeshCoords[i].v1);
 		VectorCoords v2n = scale.matmul_vtr(mesh.MeshCoords[i].v2);
 		VectorCoords v3n = scale.matmul_vtr(mesh.MeshCoords[i].v3);
 
 		Triangle worldTris(v1n, v2n, v3n, mat);
+		std::lock_guard<std::mutex> guard(tc);
 		triangleCollection.push(worldTris);
 	}
 

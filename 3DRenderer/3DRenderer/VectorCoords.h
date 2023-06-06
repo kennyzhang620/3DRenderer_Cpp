@@ -24,6 +24,9 @@ public:
 	float nz = 0;
 	float nw = 0;
 
+	float ux = 0;
+	float uy = 0;
+
 	bool operator > (const VectorCoords& str) const
 	{
 		return (x > str.x);
@@ -119,6 +122,19 @@ public:
 		g = x2;
 		b = x3;
 		a = x4;
+	}
+
+	VectorCoords(float a, float b, float c, float d, float x1, float x2, float x3, float x4, float u, float v) {
+		x = a;
+		y = b;
+		z = c;
+		w = d;
+		r = x1;
+		g = x2;
+		b = x3;
+		a = x4;
+		ux = u;
+		uy = v;
 	}
 
 

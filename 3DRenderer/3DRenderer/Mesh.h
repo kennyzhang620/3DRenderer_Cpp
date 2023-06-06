@@ -18,11 +18,6 @@ public:
 
 	float z_index; // For z-buffering
 
-	// stores uv coordinates for texturing (often in conjunction with r,g,b,a above)
-
-	float ux = 0;
-	float uy = 0;
-
 	bool operator > (const Triangle& str) const
 	{
 		return (z_index > str.z_index);
@@ -131,22 +126,11 @@ public:
 		z_index = min(min(v1.z, v2.z), v3.z);
 	}
 
-	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, float uvx, float uvy, Material* fl) {
+	Triangle(VectorCoords x, VectorCoords y, VectorCoords z,  Material* fl) {
 		v1 = x;
 		v2 = y;
 		v3 = z;
-		ux = uvx;
-		uy = uvy;
-		FragMaterial = fl;
 
-		z_index = min(min(v1.z, v2.z), v3.z);
-
-	}
-
-	Triangle(VectorCoords x, VectorCoords y, VectorCoords z, Material* fl) {
-		v1 = x;
-		v2 = y;
-		v3 = z;
 		FragMaterial = fl;
 
 		z_index = min(min(v1.z, v2.z), v3.z);
@@ -165,6 +149,13 @@ public:
 
 	}
 
+	Mesh(const char* objfile) {
+
+	}
+
+	void AddVertex(VectorCoords v, VectorCoords v2, VectorCoords v3) {
+
+	}
 	Mesh(vector<float> pos, vector<float> norms, vector<float> uvs) {
 		//	cout << pos.size()/9 << "SS\n";
 		for (int i = 0; i < pos.size(); i += 9) {

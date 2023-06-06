@@ -11,7 +11,7 @@ float radians(float deg) {
 }
 
 static queue<Triangle> tris;
-static int windowX = 720 / 3; int windowY = 480 / 3;
+static int windowX = 720 / 4; int windowY = 480 / 4;
 static Renderer3D renderer;
 
 static int frames = 0;
