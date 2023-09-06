@@ -197,8 +197,48 @@ public:
 	float xScale = 1;
 	float yScale = 1;
 	float zScale = 1;
+	bool Update = true;
 
 	Transform() {
+	}
+
+	void set_all(const Transform str) {
+		xPos = str.xPos;
+		yPos = str.yPos;
+		zPos = str.zPos;
+
+		xRot = str.xRot;
+		yRot = str.yRot;
+		zRot = str.zRot;
+
+		xScale = str.xScale;
+		yScale = str.yScale;
+		zScale = str.zScale;
+	}
+	Transform operator + (const Transform& str) {
+		return Transform(xPos + str.xPos, yPos + str.yPos, zPos + str.zPos,xRot + str.xRot,yRot + str.yRot,zRot + str.zRot,xScale + str.xScale,yScale + str.yScale,zScale + str.zScale);
+	}
+
+	Transform operator - (const Transform& str) {
+		return Transform(xPos - str.xPos, yPos - str.yPos, zPos - str.zPos, xRot - str.xRot, yRot - str.yRot, zRot - str.zRot, xScale - str.xScale, yScale - str.yScale, zScale - str.zScale);
+	}
+
+	Transform operator * (const Transform& str) {
+		return Transform(xPos * str.xPos, yPos * str.yPos, zPos * str.zPos, xRot * str.xRot, yRot * str.yRot, zRot * str.zRot, xScale * str.xScale, yScale * str.yScale, zScale * str.zScale);
+
+	}
+
+	Transform operator / (const Transform& str) {
+		return Transform(xPos / str.xPos, yPos / str.yPos, zPos / str.zPos, xRot / str.xRot, yRot / str.yRot, zRot / str.zRot, xScale / str.xScale, yScale / str.yScale, zScale / str.zScale);
+
+	}
+
+	VectorCoords GetVector() {
+		return VectorCoords(xPos, yPos, zPos, xRot, yRot, zRot, xScale, yScale, zScale, 0);
+	}
+
+	float dot(const Transform& str) {
+		return xPos * str.xPos + yPos * str.yPos + zPos * str.zPos;
 	}
 
 	Transform(float x, float y, float z, int MODE) {
@@ -232,5 +272,9 @@ public:
 
 	void SetRotation(float x, float y, float z) {
 		xRot = x; yRot = y; zRot = z;
+	}
+
+	void SetScale(float x, float y, float z) {
+		xScale = x; yScale = y; zScale = z;
 	}
 };

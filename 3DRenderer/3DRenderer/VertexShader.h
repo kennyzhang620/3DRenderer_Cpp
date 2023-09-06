@@ -204,8 +204,10 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 	rot.res_to_matrix();
 
 	renderer.ClearPixels();
+	PolyCount = 0;
 	int sizeQ = tris.size();
-	while (sizeQ-- >= 0) {
+
+	for (sizeQ = tris.size(); sizeQ >= 0; sizeQ--) {
 		VectorCoords v1n = cam.matmul_vtr(tris.front().v1);
 		VectorCoords v2n = cam.matmul_vtr(tris.front().v2);
 		VectorCoords v3n = cam.matmul_vtr(tris.front().v3);
@@ -220,12 +222,13 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 		
 		if (clippedTris > 0) {
 			int i = 0;
-#pragma omp parallel for private(i)
+
 			for (i = 0; i < clippedTris; i++) {
 				v1n = rot.matmul_vtr(clipped[i].v1);
 				v2n = rot.matmul_vtr(clipped[i].v2);
 				v3n = rot.matmul_vtr(clipped[i].v3);
 
+				PolyCount++;
 				if (v1n.w != 1 && v1n.w != 0) {
 					v1n.x /= v1n.w;
 					v1n.y /= v1n.w;

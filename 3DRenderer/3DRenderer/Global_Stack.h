@@ -18,6 +18,7 @@ static int frames = 0;
 static int tframe = 0;
 static int dTtime = 0;
 static int cfps = 0;
+static int PolyCount = 0;
 static bool onTick = true; // Allow game operation if this is active.
 static time_t t = time(NULL);
 
@@ -33,14 +34,7 @@ bool Tri_Comp(Triangle t, vector<Triangle> ts) {
 	return false;
 }
 
-void ConsoleUpdate() {
-	string s = " " + std::to_string(cfps) + " FPS" + " Frames rendered: " + std::to_string(frames++) + " Tick rate: " + std::to_string(cfps * (0.05f));
-	tframe++;
-	wstring r = std::wstring(s.begin(), s.end());
-	LPCWSTR wideString = r.c_str();
-	SetConsoleTitle(wideString);
-
-	dTtime++;
+void CaptureFrames() {
 
 	time_t c = time(NULL) - t;
 	if (c >= 1) {
@@ -48,6 +42,17 @@ void ConsoleUpdate() {
 		cfps = tframe;
 		tframe = 0;
 	}
+}
+
+void ConsoleUpdate() {
+	string s = " " + std::to_string(cfps) + " FPS" + " Frames rendered: " + std::to_string(frames++) + " Tick rate: " + std::to_string(cfps * (0.05f)) + " Polys: " + std::to_string(PolyCount);
+	tframe++;
+	wstring r = std::wstring(s.begin(), s.end());
+	LPCWSTR wideString = r.c_str();
+	SetConsoleTitle(wideString);
+
+	CaptureFrames();
+	dTtime++;
 
 	if (dTtime > cfps * 0.05f) {
 		onTick = true;

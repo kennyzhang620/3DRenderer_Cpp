@@ -1,32 +1,35 @@
 #pragma once
 #include "GameObject.h"
 #include "RendererObject.h"
-#include "UnmappedMat.h"
-class LevelObject: public GameObject
+#include "DiffuseMaterial.h"
+class Cube_PrTest : public GameObject
 {
 public:
 
-	LevelObject():objectMesh(am) {
+	Cube_PrTest() :objectMesh(am) {
 		Start();
 	}
 
-	LevelObject(float x, float y, float z):objectMesh(am) {
+	Cube_PrTest(float x, float y, float z) :objectMesh(am) {
 		Start();
 		ObjectTransform->xPos = x;
 		ObjectTransform->yPos = y;
 		ObjectTransform->zPos = z;
 	}
+
 	Mesh& objectMesh;
 	RendererObject Renderer;
 
 	void Start() override {
 		Renderer.ObjectMesh = &objectMesh;
 		Renderer.ObjectTransform = ObjectTransform;
-		Renderer.BaseMat = &mat;
+		df.TextureMode = 1;
+		df.TextureName = "dvd.bmp";
+		Renderer.BaseMat = &df;
 	}
 	void Update() override {
 		Renderer.Update();
-		ObjectTransform->xRot += radians(1);
+	//	cout << '(' << ObjectTransform->xPos << "," << ObjectTransform->zPos << ")\n";
 	}
 
 private:
@@ -37,7 +40,7 @@ private:
 	vector<float> uvCoords = {};
 	vector<float> uv_test = {};
 
-	Mesh am = Mesh(test_pos, test_norms, uvCoords);
-	UnmappedMat mat = UnmappedMat();
+	Mesh am = Mesh(positions, test_norms, uvCoords);
+	DiffuseMaterial df = DiffuseMaterial();
 };
 

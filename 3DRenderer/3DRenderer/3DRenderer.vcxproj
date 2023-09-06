@@ -157,6 +157,7 @@
     <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="CameraObject.cpp" />
     <ClCompile Include="CubePrim.cpp" />
+    <ClCompile Include="Cube_PrTest.cpp" />
     <ClCompile Include="DebugSp.cpp" />
     <ClCompile Include="DiffuseMaterial.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -169,6 +170,8 @@
     <ClCompile Include="Renderer_Main.cpp" />
     <ClCompile Include="MatrixMxN.cpp" />
     <ClCompile Include="Mesh.h" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Scene1_Test.cpp" />
     <ClCompile Include="TestObj.cpp" />
     <ClCompile Include="UnmappedMat.cpp" />
     <ClCompile Include="VectorCoords.cpp" />
@@ -179,6 +182,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraObject.h" />
     <ClInclude Include="CubePrim.h" />
+    <ClInclude Include="Cube_PrTest.h" />
     <ClInclude Include="DebugSp.h" />
     <ClInclude Include="DiffuseMaterial.h" />
     <ClInclude Include="FragmentShaders.h" />
@@ -193,6 +197,8 @@
     <ClInclude Include="MatrixMxN.h" />
     <ClInclude Include="Renderer_2D.h" />
     <ClInclude Include="Render_2D_Demo.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Scene1_Test.h" />
     <ClInclude Include="TestObj.h" />
     <ClInclude Include="UnmappedMat.h" />
     <ClInclude Include="VectorCoords.h" />

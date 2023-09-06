@@ -19,11 +19,11 @@ public:
 	Mesh& objectMesh;
 	RendererObject Renderer;
 
-	void Start() {
-		Renderer.ObjectMesh = objectMesh;
+	void Start() override {
+		Renderer.ObjectMesh = &objectMesh;
 		Renderer.ObjectTransform = ObjectTransform;
 	}
-	void Update() {
+	void Update() override {
 		Renderer.Update();
 	}
 

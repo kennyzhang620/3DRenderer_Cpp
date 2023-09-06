@@ -20,14 +20,14 @@ class CubePrim: public GameObject
 		Mesh& objectMesh;
 		RendererObject Renderer;
 
-		void Start() {
-			Renderer.ObjectMesh = objectMesh;
+		void Start() override {
+			Renderer.ObjectMesh = &objectMesh;
 			Renderer.ObjectTransform = ObjectTransform;
 			df.TextureMode = 1;
 			df.TextureName = "dvd.bmp";
 			Renderer.BaseMat = &df;
 		}
-		void Update() {
+		void Update() override {
 			Renderer.Update();
 		}
 

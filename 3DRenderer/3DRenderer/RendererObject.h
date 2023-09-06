@@ -6,8 +6,8 @@ class RendererObject :
     public GameObject
 {
 public:
-    Mesh ObjectMesh;
-    Material* BaseMat;
+    Mesh* ObjectMesh = nullptr;
+    Material* BaseMat = nullptr;
 
     void Start() {
         
@@ -18,7 +18,7 @@ public:
     }
 
     void Update() {
-        MeshTransform(ObjectMesh, *ObjectTransform,BaseMat);
+        MeshTransform(*ObjectMesh, *ObjectTransform,BaseMat);
     }
 
 };

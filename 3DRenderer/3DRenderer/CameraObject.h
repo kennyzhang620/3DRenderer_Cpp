@@ -29,8 +29,12 @@ public:
 	float nearPlane = 0.01f;
 	float farPlane = 1000;
 
+	void Start() override {
+
+	}
+
 	ProjectionMode ProjectMode = Project_Perspective;
-	void Update() {
+	void Update() override {
 		CameraSetup(ScreenX, ScreenY, *ObjectTransform, nearPlane, farPlane, ProjectMode);
 	}
 

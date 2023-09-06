@@ -14,7 +14,6 @@
 #include <queue>
 #include <unordered_map>
 #include <mutex>
-
 using namespace std;
 
 // Refactor 3D class to only contain essentials needed for 3D and basic 2D rasterization.
@@ -76,6 +75,7 @@ public:
 	}
 	
 	void ClearPixels() {
+		
 		for (auto x = zbuffer.begin(); x != zbuffer.end(); x++) {
 			
 			ZBufferFrag r = x->second;
@@ -133,7 +133,6 @@ public:
 		else {
 			std::pair<float, ZBufferFrag> pair(t, zfrag);
 			zbuffer.insert(pair);
-
 			SetPixelV(hdc, x, y, colour);
 		}
 	}
@@ -205,7 +204,7 @@ public:
 		if (maxY > maxHeight)
 			maxY = maxHeight;
 		
-			if (true) {
+			if (mat != nullptr) {
 				int xt = minX;
 				int yt = minY;
 
@@ -248,8 +247,9 @@ public:
 						//	}
 						//	SetPixelV(memdc, xt, yt, RGB(fragColor.x,fragColor.y,fragColor.z));
 
-							SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
-							
+							if (rand() % 100 >= (100 - 50)) {
+								SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+							}
 						//	SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
 						}
 					}

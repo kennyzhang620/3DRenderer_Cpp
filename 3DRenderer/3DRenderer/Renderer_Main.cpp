@@ -15,6 +15,7 @@
 #include "DebugSp.h"
 #include "DiffuseMaterial.h"
 #include "TestObj.h"
+#include "Scene1_Test.h"
 
 using namespace std;
 
@@ -36,16 +37,18 @@ void Rasterize_ST() {
 	TestObj o(0,0,3);
 	CubePrim c(3, 0, 0);
 	PlayerObject Player(0.0f, 1.0f, 0.0f);
-	GameObject gc;
+
+	Scene1_A level1;
 	while (1) {
 		if (onTick) {
+			level1.Run();
 			//m1.Update();
-			c.Update();
+	//		c.Update();
 		//	d.Update();
 			//Player.Update();
 		//	p2.Update();
-			o.Update();
-			Player.Update();
+		//	o.Update();
+		//	Player.Update();
 			onTick = false;
 		}
 		ConsoleUpdate();

@@ -7,12 +7,10 @@ public:
 	Transform* ObjectTransform;
 
 	GameObject() {
-		Start();
 		ObjectTransform = &def;
 	}
 
 	GameObject(float x, float y, float z) {
-		Start();
 		ObjectTransform = &def;
 		
 		ObjectTransform->xPos = x;
@@ -20,9 +18,7 @@ public:
 		ObjectTransform->zPos = z;
 	}
 	// Called once upon instantiation
-	void Start() {
-
-	}
+	virtual void Start() = 0;
 
 	void OnEnable() {
 
@@ -33,9 +29,7 @@ public:
 	}
 	
 	// Called per frame
-	void Update() {
-
-	}
+	virtual void Update() = 0;
 
 private:
 	Transform def = Transform();
