@@ -11,7 +11,13 @@ float radians(float deg) {
 }
 
 static queue<Triangle> tris;
-static int windowX = 720 / 4; int windowY = 480 / 4;
+
+// Defines render resolution
+static int scaleFactor = 4;
+static int windowX = 1024 / scaleFactor; int windowY = 896 / scaleFactor;
+// Maximum quality
+static int QualityLevel = 100;
+static bool Interlace = !true;
 static Renderer3D renderer;
 
 static int frames = 0;
@@ -39,13 +45,20 @@ void CaptureFrames() {
 	time_t c = time(NULL) - t;
 	if (c >= 1) {
 		t = time(NULL);
-		cfps = tframe;
+		float fps = tframe;
+		fps /= c;
+		cfps = fps;
 		tframe = 0;
 	}
 }
 
+string IsInterlaced() {
+	if (Interlace) return "Interlaced";
+	return "Progressive";
+}
+
 void ConsoleUpdate() {
-	string s = " " + std::to_string(cfps) + " FPS" + " Frames rendered: " + std::to_string(frames++) + " Tick rate: " + std::to_string(cfps * (0.05f)) + " Polys: " + std::to_string(PolyCount);
+	string s = " " + std::to_string(cfps) + " FPS" + " Frames rendered: " + std::to_string(frames++) + " Tick rate: " + std::to_string(cfps * (0.05f)) + " Polys: " + std::to_string(PolyCount) + " Resolution: (" + std::to_string(windowX) + "x" + std::to_string(windowY) + ") " + IsInterlaced() + "\n";
 	tframe++;
 	wstring r = std::wstring(s.begin(), s.end());
 	LPCWSTR wideString = r.c_str();

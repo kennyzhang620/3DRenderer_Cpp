@@ -21,7 +21,8 @@ using namespace std;
 
 void Rasterize_ST() {
 	renderer.setCanvas(windowX, windowY);
-
+	renderer.QualityLevel = QualityLevel;
+	renderer.Interlace = Interlace;
 	/*
 	LevelObject m1(0,0,5);
 	DebugSp d(-3, 0, 0);

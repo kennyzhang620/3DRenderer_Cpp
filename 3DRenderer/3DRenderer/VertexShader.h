@@ -203,7 +203,7 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 	}
 	rot.res_to_matrix();
 
-	renderer.ClearPixels();
+	renderer.setCounter();
 	PolyCount = 0;
 	int sizeQ = tris.size();
 
@@ -269,7 +269,9 @@ void CameraSetup(int xCoords, int yCoords, Camera camera, float nearPlane, float
 		tris.push(tris.front());
 		tris.pop();
 	}
-	renderer.displayImage(xCoords, yCoords);
+	renderer.ClearPixels(renderer.Interlace != Interlace);
+	renderer.Interlace = Interlace;
+	renderer.displayImage(xCoords, yCoords, scaleFactor, NEAREST_NEIGHBOR);
 }
 
 void MeshTransform(Mesh mesh, Transform trans, Material* mat) {

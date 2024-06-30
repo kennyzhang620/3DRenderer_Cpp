@@ -14,6 +14,10 @@
 #include <queue>
 #include <unordered_map>
 #include <mutex>
+
+#define NO_SCALING -109
+#define NEAREST_NEIGHBOR -110
+
 using namespace std;
 
 // Refactor 3D class to only contain essentials needed for 3D and basic 2D rasterization.
@@ -41,12 +45,18 @@ struct ZBufferFrag {
 	COLORREF colour;
 	float z_index;
 	int x, y;
+	bool odd = true;
+	uint8_t frame;
 };
 
 class Renderer3D
 {
-
+	bool odd = true;
+	uint8_t c_f = 0;
 public:
+
+	int QualityLevel = 50;
+	bool Interlace = false;
 
 	void setCanvas(int resX, int resY) { // Create a canvas
 		myconsole = GetConsoleWindow();
@@ -74,16 +84,25 @@ public:
 		return res;
 	}
 	
-	void ClearPixels() {
+	void ClearPixels(bool frameModeUpdate = false) {
 		
 		for (auto x = zbuffer.begin(); x != zbuffer.end(); x++) {
 			
 			ZBufferFrag r = x->second;
 
-			SetPixelV(memdc, r.x, r.y, RGB(0, 0, 0));
+			if ((r.frame != c_f && r.odd == odd) || frameModeUpdate) {
+				SetPixelV(memdc, r.x, r.y, RGB(0, 0, 0));
+
+				if (!frameModeUpdate)
+					zbuffer.erase(x->first);
+			}
 		}
 
-		zbuffer.clear();
+		if (frameModeUpdate) {
+			zbuffer.clear();
+			frameModeUpdate = false;
+		}
+		
 	}
 
 	void SetPixelOptimized(HDC hdc, float x, float y, COLORREF colour) {
@@ -115,15 +134,19 @@ public:
 		zfrag.z_index = z;
 		zfrag.x = x;
 		zfrag.y = y;
+		zfrag.frame = c_f;
+		zfrag.odd = odd;
 
 		std::lock_guard<std::mutex> guard(zbuffer_m);
 		if (zbuffer.find(t) != zbuffer.end()) {
-			if (zbuffer[t].z_index < z) {
-				
-				zbuffer[t].z_index = z;
-				zbuffer[t].colour = colour;
-				zbuffer[t].x = x; zbuffer[t].y = y;
 
+			zbuffer[t].z_index = z;
+			zbuffer[t].colour = colour;
+			zbuffer[t].x = x; zbuffer[t].y = y;
+			zbuffer[t].frame = c_f;
+			zbuffer[t].odd = odd;
+
+			if (zbuffer[t].z_index < z) {
 				SetPixelV(hdc, x, y, colour);
 			}
 			else {
@@ -247,8 +270,17 @@ public:
 						//	}
 						//	SetPixelV(memdc, xt, yt, RGB(fragColor.x,fragColor.y,fragColor.z));
 
-							if (rand() % 100 >= (100 - 50)) {
-								SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+							if (rand() % 100 >= (100 - QualityLevel)) {
+								if (Interlace) {
+									if (yt % 2 != 0 && odd)
+										SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+
+									if (yt % 2 == 0 && !odd)
+										SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+								}
+								else {
+									SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
+								}
 							}
 						//	SetPixelZBuffer(memdc, xt, yt, t.v1.z, RGB(fragColor.x, fragColor.y, fragColor.z));
 						}
@@ -314,8 +346,19 @@ public:
 		DeleteObject(hbitmap);
 	}
 
-	void displayImage(int resX, int resY) { // Render image to buffer (Screen) with the desired canvas size
-		BitBlt(mydc, 0, 0, resX, resY, memdc, 0, 0, SRCCOPY);
+	void setCounter() {
+		c_f++;
+
+		if (Interlace)
+			odd = !odd;
+	}
+
+	void displayImage(int resX, int resY, int SCALE_FACTOR = 1, int SCALE_MODE = NO_SCALING) { // Render image to buffer (Screen) with the desired canvas size
+		if (SCALE_MODE == NO_SCALING)
+			BitBlt(mydc, 0, 0, resX, resY, memdc, 0, 0, SRCCOPY);
+
+		if (SCALE_MODE == NEAREST_NEIGHBOR)
+			StretchBlt(mydc, 0, 0, resX * SCALE_FACTOR, resY * SCALE_FACTOR, memdc, 0, 0, resX, resY, SRCCOPY);
 	}
 
 	/*
